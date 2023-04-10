@@ -9,6 +9,7 @@ import (
 	"go/ast"
 	"go/types"
 	"log"
+	"sync"
 
 	"github.com/fatih/color"
 	"golang.org/x/tools/go/analysis"
@@ -73,6 +74,8 @@ func countGoStmt(f *ast.File) int {
 	})
 }
 
+var checked sync.Map
+
 func checkIgnore(pass *analysis.Pass, nf *ast.File) bool {
 	tokenFile := pass.Fset.File(nf.Pos())
 
@@ -92,6 +95,11 @@ func checkIgnore(pass *analysis.Pass, nf *ast.File) bool {
 		}
 		return true
 	}
+
+	if _, ok := checked.Load(tokenFile.Name()); ok {
+		return true
+	}
+	checked.Store(tokenFile.Name(), true)
 
 	return false
 }
