@@ -16,7 +16,8 @@ import (
 )
 
 func NodeLineNo(pass *analysis.Pass, node ast.Node) string {
-	pos := pass.Fset.Position(node.Pos())
+	p := node.Pos()
+	pos := pass.Fset.Position(p)
 	rn, _ := filepath.Rel(wd, pos.Filename)
 	return fmt.Sprintf("%s:%d", rn, pos.Line)
 }

@@ -1,0 +1,13 @@
+package demo
+
+func fn10(){
+	go func() {
+		fn11()
+	}()
+}
+
+func fn11(){
+	defer func() {
+		_=recover()
+	}()
+}

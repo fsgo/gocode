@@ -1,0 +1,22 @@
+package demo
+
+func fn30(fn func()){
+	defer func(){
+	    _=recover()
+	}()
+	fn()
+}
+
+func fn31(){
+  go fn30(fn32)
+}
+
+func fn32(){
+}
+
+
+func fn33(){
+  go fn30(func(){
+       fn31()
+  })
+}

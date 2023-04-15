@@ -10,12 +10,15 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"github.com/fsgo/gocode/zpass"
 )
 
 var wd string
@@ -28,8 +31,9 @@ func init() {
 	wd = c
 }
 
-func FindAstFileByObject(pass *analysis.Pass, ov types.Object) (*ast.File, error) {
-	tokenFile := pass.Fset.File(ov.Pos())
+func FindAstFileByObject(pass *analysis.Pass, ov types.Object) (f *ast.File, err error) {
+	p := ov.Pos()
+	tokenFile := pass.Fset.File(p)
 	for _, astFile := range pass.Files {
 		tokenFile2 := pass.Fset.File(astFile.Pos())
 		if tokenFile.Name() == tokenFile2.Name() {
@@ -37,11 +41,21 @@ func FindAstFileByObject(pass *analysis.Pass, ov types.Object) (*ast.File, error
 		}
 	}
 	mod := parser.Mode(0) | parser.ParseComments
-	f, err := parser.ParseFile(pass.Fset, tokenFile.Name(), nil, mod)
+	f, err = parser.ParseFile(pass.Fset, tokenFile.Name(), nil, mod)
+	if zpass.IsDebugVerbose() {
+		log.Println("parser.ParseFile:", tokenFile.Name(), ov.Pkg().Path(), err)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("parseFile %s failed: %v", tokenFile.Name(), err)
 	}
 	pass.Files = append(pass.Files, f)
+
+	// conf := packages.Config{
+	// 	Mode:  packages.LoadSyntax,
+	// 	Tests: false,
+	// }
+	//
+	// initial, err := packages.Load(&conf, "./...")
 
 	return f, nil
 }

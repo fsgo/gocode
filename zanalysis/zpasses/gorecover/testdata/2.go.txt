@@ -1,0 +1,20 @@
+package demo
+
+func fn20(){
+	go func() {
+		_=recover()
+	}()
+}
+
+func fn21(){
+	go func() {
+		recover()
+	}()
+}
+
+func fn22(){
+	go func() {
+		if re:=recover();re!=nil{
+		}
+	}()
+}

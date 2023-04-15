@@ -1,0 +1,6 @@
+package demo
+
+func fn40(){
+   // https://github.com/golang/sync/blob/master/singleflight/singleflight.go
+   go panic("hello")
+}
