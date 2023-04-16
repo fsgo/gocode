@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/fatih/color v1.15.0
-	github.com/fsgo/fsgo v0.0.5-0.20230415130342-433e2922b4cc
+	github.com/fsgo/fsgo v0.0.5
 	golang.org/x/mod v0.10.0
 	golang.org/x/tools v0.8.0
 )

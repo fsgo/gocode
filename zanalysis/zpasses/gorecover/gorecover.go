@@ -39,8 +39,12 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	if zpass.IsDebugVerbose() {
-		log.Printf("[%s] start check pkg: %s\n", pass.Analyzer.Name, pass.Pkg.Path())
+	if zpass.IsTestPkg(pass.Pkg.Path()) {
+		return nil, nil
+	}
+
+	if zpass.IsTrace() {
+		log.Printf("[%s] start check pkg: %s: %s\n", pass.Analyzer.Name, pass.Pkg.Name(), pass.Pkg.Path())
 	}
 	container.SetCurrentPass(pass)
 

@@ -17,14 +17,19 @@ import (
 )
 
 type Container struct {
+	Tests    bool
 	passList fssync.Map[string, *analysis.Pass]
 	current  atomic.Pointer[analysis.Pass]
 }
 
 func (c *Container) AddPass(p *analysis.Pass) {
-	c.passList.Store(p.Pkg.Path(), p)
-	if IsDebugVerbose() {
-		log.Printf("[%s] AddPass %03d, pkg: %s\n", p.Analyzer.Name, c.passList.Count(), p.Pkg.Path())
+	if IsTestPkg(p.Pkg.Path()) && !c.Tests {
+		return
+	}
+	pp := PkgPath(p.Pkg.Path())
+	c.passList.Store(pp, p)
+	if IsTrace() {
+		log.Printf("[%s] AddPass %03d, pkg: %s\n", p.Analyzer.Name, c.passList.Count(), pp)
 	}
 }
 
@@ -42,27 +47,40 @@ func (c *Container) FindPass(pkg string) *analysis.Pass {
 }
 
 func (c *Container) FindAstFileByObject(ov types.Object) (ap *analysis.Pass, f *ast.File, err error) {
-	pass := c.FindPass(ov.Pkg().Path())
+	curPass := c.CurrentPass()
+	foundPass := c.FindPass(ov.Pkg().Path())
 	p := ov.Pos()
-	cur := c.CurrentPass()
-	tokenFile := cur.Fset.File(p)
-	if pass != nil {
-		for _, astFile := range pass.Files {
-			tokenFile2 := pass.Fset.File(astFile.Pos())
+	tokenFile := curPass.Fset.File(p)
+
+	if IsTrace() {
+		log.Printf("[FindAstFile] curPkg=%s, ov(Pkg=%s, Name=%s), tokenFile=%s, foundPass=%v\n",
+			curPass.Pkg.Path(),
+			ov.Pkg().Path(),
+			ov.Name(),
+			tokenFile.Name(),
+			foundPass != nil,
+		)
+	}
+
+	if foundPass != nil {
+		for _, astFile := range foundPass.Files {
+			tokenFile2 := foundPass.Fset.File(astFile.Pos())
 			if tokenFile.Name() == tokenFile2.Name() {
-				return pass, astFile, nil
+				return foundPass, astFile, nil
 			}
 		}
 		return nil, nil, fmt.Errorf("not found %s in pkg %s", tokenFile.Name(), ov.Pkg().Path())
 	}
+
+	// 目前已解析并加载所有依赖，所以下面的理论不会被执行到
 	mod := parser.Mode(0) | parser.ParseComments
-	f, err = parser.ParseFile(cur.Fset, tokenFile.Name(), nil, mod)
+	f, err = parser.ParseFile(curPass.Fset, tokenFile.Name(), nil, mod)
 	if IsDebugVerbose() {
 		log.Println("parser.ParseFile:", tokenFile.Name(), ov.Pkg().Path(), err)
 	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("parseFile %s failed: %v", tokenFile.Name(), err)
 	}
-	cur.Files = append(cur.Files, f)
-	return cur, f, nil
+	curPass.Files = append(curPass.Files, f)
+	return curPass, f, nil
 }

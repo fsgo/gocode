@@ -15,11 +15,21 @@ func NewInitAnalyzer(c *Container) *analysis.Analyzer {
 		Doc:  `add all pass to DefaultContainer`,
 		Requires: []*analysis.Analyzer{
 			inspect.Analyzer,
+			// findcall.Analyzer,
 		},
 		Run: func(pass *analysis.Pass) (any, error) {
 			tryParserFlags()
 			c.AddPass(pass)
 			return nil, nil
 		},
+		FactTypes: []analysis.Fact{new(foundFact)},
 	}
 }
+
+type foundFact struct{}
+
+func (*foundFact) String() string {
+	return "found"
+}
+
+func (*foundFact) AFact() {}

@@ -8,8 +8,10 @@ import (
 	"golang.org/x/tools/go/analysis/singlechecker"
 
 	"github.com/fsgo/gocode/zanalysis/zpasses/gorecover"
+	"github.com/fsgo/gocode/zpass"
 )
 
 func main() {
+	zpass.AddIgnoreFlagName("fix")
 	singlechecker.Main(gorecover.Analyzer)
 }

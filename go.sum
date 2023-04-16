@@ -1,8 +1,8 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/fatih/color v1.15.0 h1:kOqh6YHBtK8aywxGerMG2Eq3H6Qgoqeo13Bk2Mv/nBs=
 github.com/fatih/color v1.15.0/go.mod h1:0h5ZqXfHYED7Bhv2ZJamyIOUej9KtShiJESRwBDUSsw=
-github.com/fsgo/fsgo v0.0.5-0.20230415130342-433e2922b4cc h1:1rY8AHo79DN7YWS0vHemJg6FlQZtqSBziu5YT4TJaLc=
-github.com/fsgo/fsgo v0.0.5-0.20230415130342-433e2922b4cc/go.mod h1:N5gWUe28uLu4wQmDUt+jFpzr+SXQrFpzHqXI+DBNCy0=
+github.com/fsgo/fsgo v0.0.5 h1:dykKvBoZa7PyGQdEWb26IR0H2DAou9K2HpFjGBOEHQw=
+github.com/fsgo/fsgo v0.0.5/go.mod h1:N5gWUe28uLu4wQmDUt+jFpzr+SXQrFpzHqXI+DBNCy0=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
