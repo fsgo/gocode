@@ -142,6 +142,10 @@ func paramName(pass *analysis.Pass, msgType string, field ast.Expr) string {
 				return "*" + paramName(pass, msgType, v1.X)
 			case *ast.ArrayType:
 				return "[] " + paramName(pass, msgType, v1.Elt)
+			case *ast.InterfaceType:
+				return "any"
+			case *ast.StructType:
+				return "struct" // todo
 			default:
 				panic(fmt.Sprintf(msgType+": not support %T", v1))
 			}
@@ -308,6 +312,8 @@ func doTypeSpec(pass *analysis.Pass, node *ast.TypeSpec) {
 	case *ast.SelectorExpr:
 		// type Condition = xmatcher.Config
 		doc.Type = "type"
+	case *ast.ChanType:
+		doc.Type = "chan"
 	default:
 		panic(fmt.Sprintf("not support: %T", vt))
 	}
