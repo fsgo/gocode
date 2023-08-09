@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"sync"
+	"sync/atomic"
 )
 
 // CType1 类型 1
@@ -71,6 +72,15 @@ type (
 	}
 
 	LChannel chan User
+
+	Integer *int
+
+	Cell *interface{} // 注意，这个不是 *any
+
+	Callback struct {
+		rowQueries []*func(scope *IUnknown)
+			processors []*User
+	 }
 )
 
 type XXX_InternalExtensions struct {
@@ -80,4 +90,61 @@ type XXX_InternalExtensions struct {
    	}
 }
 
+type objects [T any] struct {
 
+}
+
+func (os objects[T]) MarshalLogArray(arr net.Addr) error {
+   	return nil
+}
+
+type objectValues[T,P any] struct{}
+
+func (os objectValues[T, P]) MarshalLogArray(arr net.Addr) error{
+	return nil
+}
+
+type Empty struct{}
+
+type Set[E int] map[E]Empty
+
+func (s Set[E]) Insert(items ...E) Set[E] {
+   	return s
+}
+
+type NodeFilterFn func()
+
+type  Query struct {
+	root    Func1
+	tail    Func1
+	filters *map[string]NodeFilterFn
+	Filter2 *map[string]NodeFilterFn
+}
+
+func (f *Query) StringToIntVar(p *map[string]int, name string, value map[string]int, usage string){
+
+}
+
+func (f *Query) ObjxMap(optionalDefault ...(User)) User{
+	return User{}
+}
+
+type Pointer[T any] struct {
+	_ User // disallow non-atomic comparison
+	p atomic.Pointer[T]
+	P1 atomic.Pointer[T]
+}
+
+type One[T any] struct {
+	storage atomic.Pointer[Pointer[T]]
+	V1 atomic.Pointer[Pointer[T]]
+}
+
+type Base struct{
+	name string
+}
+
+type P1 struct{
+	Base
+	Name string // 不错
+}

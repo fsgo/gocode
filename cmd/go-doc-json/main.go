@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	zpass.AddIgnoreFlagName("fix")
+	zpass.AddIgnoreFlagName("fix", "trace", "json")
 	singlechecker.Main(Analyzer)
 }
 
@@ -127,30 +127,7 @@ func paramName(pass *analysis.Pass, msgType string, field ast.Expr) string {
 		// func(addr net.Addr)
 		return selectorExprFullName(pt)
 	case *ast.StarExpr:
-		do := func() string {
-			switch v1 := pt.X.(type) {
-			case *ast.Ident:
-				// func(t *Info)
-				return v1.Name
-			case *ast.SelectorExpr:
-				// func(t *testing.T)
-				return selectorExprFullName(v1)
-			case *ast.IndexExpr:
-				// ipCache *abc.Storage[*ipC]
-				return paramName(pass, msgType, v1.X) // todo 需要完善
-			case *ast.StarExpr:
-				return "*" + paramName(pass, msgType, v1.X)
-			case *ast.ArrayType:
-				return "[] " + paramName(pass, msgType, v1.Elt)
-			case *ast.InterfaceType:
-				return "any"
-			case *ast.StructType:
-				return "struct" // todo
-			default:
-				panic(fmt.Sprintf(msgType+": not support %T", v1))
-			}
-		}
-		return "*" + do()
+		return "*" + paramName(pass, msgType, pt.X)
 	case *ast.Ellipsis:
 		// func(its ....XXX)
 		return "... " + paramName(pass, msgType, pt.Elt)
@@ -166,7 +143,7 @@ func paramName(pass *analysis.Pass, msgType string, field ast.Expr) string {
 		return "map" // todo 改进输出格式
 	case *ast.IndexExpr:
 		// abc atomic.Pointer[config]
-		return "IndexExpr" // todo 改进输出格式
+		return receiverName(pass, field)
 	case *ast.InterfaceType:
 		// func do(value interface{})  --> value 的类型
 		return "any"
@@ -183,6 +160,62 @@ func paramName(pass *analysis.Pass, msgType string, field ast.Expr) string {
 	}
 }
 
+// 用于返回接收定义的名称
+// 如 func (f *Query) StringToIntVar()
+// 会返回 Query.StringToIntVar
+func receiverName(pass *analysis.Pass, node ast.Expr) string {
+	var name string
+	switch st := node.(type) {
+	case *ast.StarExpr:
+		return "*" + receiverName(pass, st.X)
+	case *ast.Ident:
+		// func (User) APIName
+		return st.Name
+	case *ast.IndexExpr:
+		//  func (os objects[T]) MarshalLogArray(arr net.Addr) error
+		//  struct 的字段：p atomic.Pointer[T]
+		switch xvx := st.X.(type) {
+		default:
+			panic(fmt.Sprintf("not support %T", xvx))
+		case *ast.Ident:
+			name = xvx.Name
+		case *ast.SelectorExpr:
+			name = selectorExprFullName(xvx)
+		}
+
+		switch xvx := st.Index.(type) {
+		default:
+			panic(fmt.Sprintf("not support %T", xvx))
+		case *ast.Ident:
+			name += "[" + xvx.Name + "]"
+		case *ast.IndexExpr:
+			name += receiverName(pass, xvx)
+		}
+	case *ast.IndexListExpr:
+		// func (os objectValues[T, P]) MarshalLogArray(arr net.Addr) error
+		switch xvx := st.X.(type) {
+		default:
+			panic(fmt.Sprintf("not support %T", xvx))
+		case *ast.Ident:
+			name = xvx.Name
+		}
+		var tpNames []string
+		for _, exp := range st.Indices {
+			switch xvx := exp.(type) {
+			default:
+				panic(fmt.Sprintf("not support %T", xvx))
+			case *ast.Ident:
+				tpNames = append(tpNames, xvx.Name)
+			}
+		}
+		name += "[" + strings.Join(tpNames, ",") + "]"
+
+	default:
+		panic(fmt.Sprintf("not support: %T", st))
+	}
+	return name
+}
+
 func doFuncDecl(pass *analysis.Pass, node *ast.FuncDecl) {
 	doc := newDocLine(pass)
 	doc.Type = "func"
@@ -193,38 +226,7 @@ func doFuncDecl(pass *analysis.Pass, node *ast.FuncDecl) {
 
 	if node.Recv != nil {
 		doc.Type = "method"
-
-		switch st := node.Recv.List[0].Type.(type) {
-		case *ast.StarExpr:
-			switch xv := st.X.(type) {
-			default:
-				panic(fmt.Sprintf("not support %T", xv))
-			case *ast.Ident:
-				// func (u *User) APIName
-				doc.Name = xv.Name
-			case *ast.IndexExpr:
-				// func (b *bag[T]) All(key any) []T
-				switch xvx := xv.X.(type) {
-				default:
-					panic(fmt.Sprintf("not support %T", xvx))
-				case *ast.Ident:
-					doc.Name = xvx.Name
-				}
-			case *ast.IndexListExpr:
-				// func (c *Cache[K, V]) Register()
-				switch xvx := xv.X.(type) {
-				default:
-					panic(fmt.Sprintf("not support %T", xvx))
-				case *ast.Ident:
-					doc.Name = xvx.Name
-				}
-			}
-		case *ast.Ident:
-			// func (User) APIName
-			doc.Name = st.Name
-		default:
-			panic(fmt.Sprintf("not support: %T", st))
-		}
+		doc.Name = receiverName(pass, node.Recv.List[0].Type)
 		doc.Name += "." + node.Name.Name
 	} else {
 		doc.Name = node.Name.Name
@@ -270,6 +272,16 @@ func doTypeSpec(pass *analysis.Pass, node *ast.TypeSpec) {
 		doc.AddUsage(node.Comment.Text())
 	}
 
+	if node.TypeParams != nil {
+		var tpNames []string
+		for _, f := range node.TypeParams.List {
+			for _, n := range f.Names {
+				tpNames = append(tpNames, n.Name)
+			}
+		}
+		doc.Name += "[" + strings.Join(tpNames, ",") + "]"
+	}
+
 	defer doc.Print()
 	switch vt := node.Type.(type) {
 	case *ast.StructType:
@@ -291,6 +303,11 @@ func doTypeSpec(pass *analysis.Pass, node *ast.TypeSpec) {
 				}
 				attr.Name += name.Name
 			}
+			// 当包含一个 struct 的时候，是没有 Names 的
+			if len(f.Names) > 0 && !ast.IsExported(attr.Name) {
+				continue
+			}
+
 			attr.Type = paramName(pass, "struct Fields", f.Type)
 			doc.Attrs = append(doc.Attrs, attr)
 		}
@@ -314,14 +331,16 @@ func doTypeSpec(pass *analysis.Pass, node *ast.TypeSpec) {
 		doc.Type = "type"
 	case *ast.ChanType:
 		doc.Type = "chan"
+	case *ast.StarExpr:
+		doc.Type = "*" + paramName(pass, "doTypeSpec", vt.X)
 	default:
 		panic(fmt.Sprintf("not support: %T", vt))
 	}
 }
 
 type Attr struct {
-	Name  string
-	Type  string
+	Name  string `json:",omitempty"` // 属性名称。若是被包含，值为空
+	Type  string // 属性类型
 	Usage string `json:",omitempty"` // 使用文档
 }
 
