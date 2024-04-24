@@ -5,7 +5,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"log"
@@ -17,6 +16,8 @@ import (
 
 	"github.com/fatih/color"
 	"golang.org/x/mod/modfile"
+
+	"github.com/fsgo/gocode/internal/xmodule"
 )
 
 const goRecoverCmd = "go-recover -debug=v -test=false ./..."
@@ -40,23 +41,10 @@ func main() {
 	log.Println("total:", total)
 
 	for i, r := range mf.Require {
-		fp := filepath.Join(goModCacheDir, cacheDirName(r.Mod.String()))
+		fp := filepath.Join(goModCacheDir, xmodule.CacheDirName(r.Mod.String()))
 		log.Println(color.CyanString("Module[%d/%d]: %s  Dir: %s", i+1, total, r.Mod.String(), fp))
 		execAt(fp)
 	}
-}
-
-func cacheDirName(fp string) string {
-	var bf bytes.Buffer
-	for i := 0; i < len(fp); i++ {
-		c := string(fp[i])
-		lc := strings.ToLower(c)
-		if c != lc {
-			bf.WriteString("!")
-		}
-		bf.WriteString(lc)
-	}
-	return bf.String()
 }
 
 func getExec() string {
