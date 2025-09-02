@@ -11,12 +11,14 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/fsgo/fsgo/fssync/fsatomic"
+	"github.com/xanygo/anygo/xsync"
 
 	"github.com/fsgo/gocode/internal/xflag"
 )
 
-var debug fsatomic.String
+type atomicString = xsync.Value[string]
+
+var debug atomicString
 
 var parserOnce sync.Once
 

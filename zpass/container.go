@@ -12,13 +12,13 @@ import (
 	"log"
 	"sync/atomic"
 
-	"github.com/fsgo/fsgo/fssync"
+	"github.com/xanygo/anygo/xmap"
 	"golang.org/x/tools/go/analysis"
 )
 
 type Container struct {
 	Tests    bool
-	passList fssync.Map[string, *analysis.Pass]
+	passList xmap.Sync[string, *analysis.Pass]
 	current  atomic.Pointer[analysis.Pass]
 }
 
