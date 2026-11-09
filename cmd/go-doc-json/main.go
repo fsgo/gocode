@@ -151,7 +151,7 @@ func paramName(pass *analysis.Pass, msgType string, field ast.Expr) string {
 		// runtime.MemStats  的 BySize 字段
 		// type MemStats struct{
 		// 	BySize [61]struct {
-		//		// Size is the maximum byte size of an object in this
+		//		// PageSize is the maximum byte size of an object in this
 		//   }
 		// }
 		return "struct"
@@ -308,7 +308,7 @@ func doTypeSpec(pass *analysis.Pass, node *ast.TypeSpec) {
 				continue
 			}
 
-			attr.Type = paramName(pass, "struct Fields", f.Type)
+			attr.Type = paramName(pass, "struct OnlyFields", f.Type)
 			doc.Attrs = append(doc.Attrs, attr)
 		}
 	case *ast.Ident:

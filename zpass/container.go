@@ -29,7 +29,7 @@ func (c *Container) AddPass(p *analysis.Pass) {
 	pp := PkgPath(p.Pkg.Path())
 	c.passList.Store(pp, p)
 	if IsTrace() {
-		log.Printf("[%s] AddPass %03d, pkg: %s\n", p.Analyzer.Name, c.passList.Count(), pp)
+		log.Printf("[%s] AddPass %03d, pkg: %s\n", p.Analyzer.Name, c.passList.Len(), pp)
 	}
 }
 

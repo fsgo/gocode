@@ -39,7 +39,7 @@ func Print2(msg int, add net.Addr) {}
 
 type MemStats struct {
 	BySize [61]struct {
-		// Size is the maximum byte size of an object in this
+		// PageSize is the maximum byte size of an object in this
 		ID string
 	}
 }
@@ -79,28 +79,27 @@ type (
 
 	Callback struct {
 		rowQueries []*func(scope *IUnknown)
-			processors []*User
-	 }
+		processors []*User
+	}
 )
 
 type XXX_InternalExtensions struct {
 	p *struct {
-  		mu           sync.Mutex
-   		extensionMap map[int32]User
-   	}
+		mu           sync.Mutex
+		extensionMap map[int32]User
+	}
 }
 
-type objects [T any] struct {
-
+type objects[T any] struct {
 }
 
 func (os objects[T]) MarshalLogArray(arr net.Addr) error {
-   	return nil
+	return nil
 }
 
-type objectValues[T,P any] struct{}
+type objectValues[T, P any] struct{}
 
-func (os objectValues[T, P]) MarshalLogArray(arr net.Addr) error{
+func (os objectValues[T, P]) MarshalLogArray(arr net.Addr) error {
 	return nil
 }
 
@@ -109,42 +108,42 @@ type Empty struct{}
 type Set[E int] map[E]Empty
 
 func (s Set[E]) Insert(items ...E) Set[E] {
-   	return s
+	return s
 }
 
 type NodeFilterFn func()
 
-type  Query struct {
+type Query struct {
 	root    Func1
 	tail    Func1
 	filters *map[string]NodeFilterFn
 	Filter2 *map[string]NodeFilterFn
 }
 
-func (f *Query) StringToIntVar(p *map[string]int, name string, value map[string]int, usage string){
+func (f *Query) StringToIntVar(p *map[string]int, name string, value map[string]int, usage string) {
 
 }
 
-func (f *Query) ObjxMap(optionalDefault ...(User)) User{
+func (f *Query) ObjxMap(optionalDefault ...User) User {
 	return User{}
 }
 
 type Pointer[T any] struct {
-	_ User // disallow non-atomic comparison
-	p atomic.Pointer[T]
+	_  User // disallow non-atomic comparison
+	p  atomic.Pointer[T]
 	P1 atomic.Pointer[T]
 }
 
 type One[T any] struct {
 	storage atomic.Pointer[Pointer[T]]
-	V1 atomic.Pointer[Pointer[T]]
+	V1      atomic.Pointer[Pointer[T]]
 }
 
-type Base struct{
+type Base struct {
 	name string
 }
 
-type P1 struct{
+type P1 struct {
 	Base
 	Name string // 不错
 }
